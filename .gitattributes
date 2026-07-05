@@ -1,0 +1,37 @@
+# 1. Default behavior: Normalize line endings to LF for all files
+# This prevents issues between Windows (CRLF) and Linux/macOS (LF)
+* text=auto
+
+# 2. Force LF for source code files to ensure consistency
+*.py text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.json text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+
+# 3. Handle Postgres/Database and configuration files
+# Ensure SQL scripts are treated as text
+*.sql text eol=lf
+
+# 4. Handle binary files
+# Mark images, compressed files, and lock files as binary 
+# to prevent Git from attempting to diff or merge them
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.pdf binary
+
+# 5. Lock files (npm/pip)
+# Lock files should be treated as text but never merged automatically
+package-lock.json text
+yarn.lock text
+poetry.lock text
