@@ -1,0 +1,454 @@
+import type {
+  Recipe,
+  MealComponent,
+  CustomDish,
+  InventoryItem,
+  MealPlanEntry,
+  CookBatch,
+  GroceryExtra,
+  Expense,
+  Settings,
+} from '../types';
+import { currentWeekStart, toISODate, addDays } from '../utils/dates';
+
+const WEEK_START = currentWeekStart();
+const today = new Date();
+
+function isoHoursAgo(hours: number): string {
+  const d = new Date();
+  d.setHours(d.getHours() - hours);
+  return d.toISOString();
+}
+
+function isoDaysFromNow(days: number): string {
+  return toISODate(addDays(today, days));
+}
+
+export const recipes: Recipe[] = [
+  {
+    id: 'r1',
+    name: 'Weeknight Butter Chicken',
+    category: 'Dinner',
+    servings: 4,
+    prepTime: '45 min',
+    instructions:
+      'Marinate chicken thighs in yogurt, ginger-garlic paste, and garam masala for at least 1 hour.\nSear the chicken in a hot pan until browned, then set aside.\nIn the same pan, sauté onions until deeply golden, then add tomato puree and simmer 10 minutes.\nBlend the sauce smooth, return to the pan with butter and cream, and simmer.\nAdd the chicken back in and cook through, finishing with a swirl of cream and chopped coriander.',
+    tags: ['curry', 'batch-friendly', 'freezer-ok'],
+    rating: 5,
+    photo: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=600&q=80',
+    sourceUrls: ['https://example.com/butter-chicken'],
+    createdAt: isoDaysFromNow(-40),
+    ingredients: [
+      { id: 'i1', name: 'Chicken thighs', quantity: 800, unit: 'g', aisle: 'Meat' },
+      { id: 'i2', name: 'Yogurt', quantity: 150, unit: 'g', aisle: 'Dairy' },
+      { id: 'i3', name: 'Tomato puree', quantity: 400, unit: 'g', aisle: 'Canned' },
+      { id: 'i4', name: 'Butter', quantity: 60, unit: 'g', aisle: 'Dairy' },
+      { id: 'i5', name: 'Cream', quantity: 100, unit: 'ml', aisle: 'Dairy' },
+      { id: 'i6', name: 'Onion', quantity: 2, unit: 'pc', aisle: 'Produce' },
+    ],
+  },
+  {
+    id: 'r2',
+    name: 'Sunday Dal Makhani',
+    category: 'Dinner',
+    servings: 6,
+    prepTime: '1 hr 30 min (+ overnight soak)',
+    instructions:
+      'Soak whole black lentils and kidney beans overnight.\nPressure cook with salt until soft.\nBuild a base of onion, garlic, ginger and tomato, cook down well.\nAdd the cooked lentils and simmer low for at least 45 minutes, mashing some as you go.\nFinish with butter and a splash of cream.',
+    tags: ['batch-friendly', 'freezer-ok', 'vegetarian'],
+    rating: 4,
+    photo: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-60),
+    ingredients: [
+      { id: 'i7', name: 'Whole black lentils', quantity: 250, unit: 'g', aisle: 'Pantry' },
+      { id: 'i8', name: 'Kidney beans', quantity: 80, unit: 'g', aisle: 'Pantry' },
+      { id: 'i9', name: 'Butter', quantity: 50, unit: 'g', aisle: 'Dairy' },
+      { id: 'i10', name: 'Cream', quantity: 80, unit: 'ml', aisle: 'Dairy' },
+    ],
+  },
+  {
+    id: 'r3',
+    name: 'Iced Filter Coffee',
+    category: 'Drinks',
+    servings: 1,
+    prepTime: '5 min',
+    instructions: 'Brew strong filter coffee decoction.\nMix with cold milk and sugar over ice.',
+    tags: ['quick'],
+    rating: 4,
+    photo: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-20),
+    ingredients: [
+      { id: 'i11', name: 'Coffee decoction', quantity: 30, unit: 'ml', aisle: 'Pantry' },
+      { id: 'i12', name: 'Milk', quantity: 150, unit: 'ml', aisle: 'Dairy' },
+    ],
+  },
+  {
+    id: 'r4',
+    name: 'Dark Chocolate Mug Cake',
+    category: 'Dessert',
+    servings: 1,
+    prepTime: '8 min',
+    instructions:
+      'Whisk flour, cocoa, sugar and baking powder in a mug.\nAdd milk and oil, mix until smooth.\nMicrowave 90 seconds. Rest 1 minute before eating.',
+    tags: ['quick', 'sweet-tooth'],
+    rating: 3,
+    photo: 'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-10),
+    ingredients: [
+      { id: 'i13', name: 'Flour', quantity: 40, unit: 'g', aisle: 'Baking' },
+      { id: 'i14', name: 'Cocoa powder', quantity: 15, unit: 'g', aisle: 'Baking' },
+    ],
+  },
+];
+
+export const components: MealComponent[] = [
+  {
+    id: 'c1',
+    name: 'Grilled Lemon Chicken',
+    category: 'Protein',
+    servings: 6,
+    prepTime: '30 min',
+    instructions:
+      'Marinate chicken breast in lemon juice, garlic, and olive oil for 20 minutes.\nGrill or pan-sear until cooked through and lightly charred.\nRest, then slice.',
+    tags: ['high-protein', 'freezer-ok'],
+    rating: 5,
+    photo: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-30),
+    ingredients: [
+      { id: 'ci1', name: 'Chicken breast', quantity: 900, unit: 'g', aisle: 'Meat' },
+      { id: 'ci2', name: 'Lemon', quantity: 2, unit: 'pc', aisle: 'Produce' },
+    ],
+  },
+  {
+    id: 'c2',
+    name: 'Steamed Jasmine Rice',
+    category: 'Grain',
+    servings: 8,
+    prepTime: '25 min',
+    instructions: 'Rinse rice until water runs clear.\nCook 1:1.25 rice to water in a rice cooker or pot.\nFluff and cool before storing.',
+    tags: ['batch-friendly'],
+    rating: 4,
+    photo: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-30),
+    ingredients: [{ id: 'ci3', name: 'Jasmine rice', quantity: 600, unit: 'g', aisle: 'Pantry' }],
+  },
+  {
+    id: 'c3',
+    name: 'Roasted Broccoli & Carrots',
+    category: 'Veg',
+    servings: 6,
+    prepTime: '25 min',
+    instructions: 'Toss chopped broccoli and carrots in oil, salt, pepper.\nRoast at 220°C for 20 minutes, tossing halfway.',
+    tags: ['freezer-ok'],
+    rating: 4,
+    photo: 'https://images.unsplash.com/photo-1447175008436-054170c2e979?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-30),
+    ingredients: [
+      { id: 'ci4', name: 'Broccoli', quantity: 400, unit: 'g', aisle: 'Produce' },
+      { id: 'ci5', name: 'Carrots', quantity: 300, unit: 'g', aisle: 'Produce' },
+    ],
+  },
+  {
+    id: 'c4',
+    name: 'Garlic Tahini Sauce',
+    category: 'Sauce',
+    servings: 10,
+    prepTime: '10 min',
+    instructions: 'Whisk tahini, lemon juice, minced garlic, water and salt until smooth and pourable.',
+    tags: ['batch-friendly'],
+    rating: 5,
+    photo: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?w=600&q=80',
+    sourceUrls: [],
+    createdAt: isoDaysFromNow(-15),
+    ingredients: [
+      { id: 'ci6', name: 'Tahini', quantity: 150, unit: 'g', aisle: 'Pantry' },
+      { id: 'ci7', name: 'Garlic', quantity: 3, unit: 'pc', aisle: 'Produce' },
+    ],
+  },
+];
+
+export const customDishes: CustomDish[] = [
+  {
+    id: 'cd1',
+    name: 'Leftover fried rice',
+    photo: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?w=600&q=80',
+    notes: 'Whatever veg + egg + cold rice + soy sauce. No real recipe needed.',
+  },
+  {
+    id: 'cd2',
+    name: 'Cheese toast',
+    notes: 'Bread, butter, cheese, pan or toaster oven. 5 minutes.',
+  },
+];
+
+export const inventory: InventoryItem[] = [
+  {
+    id: 'inv1',
+    ingredientName: 'Jasmine rice',
+    quantity: 1200,
+    unit: 'g',
+    lowStockThreshold: 300,
+    trackType: 'quantity',
+    lowFlag: false,
+  },
+  {
+    id: 'inv2',
+    ingredientName: 'Chicken breast',
+    quantity: 150,
+    unit: 'g',
+    lowStockThreshold: 400,
+    trackType: 'quantity',
+    lowFlag: true,
+  },
+  {
+    id: 'inv3',
+    ingredientName: 'Tahini',
+    quantity: 40,
+    unit: 'g',
+    lowStockThreshold: 100,
+    trackType: 'quantity',
+    lowFlag: true,
+  },
+  {
+    id: 'inv4',
+    ingredientName: 'Milk',
+    quantity: 0,
+    unit: '',
+    lowStockThreshold: 0,
+    trackType: 'expiry',
+    expiryDate: isoDaysFromNow(2),
+    lowFlag: false,
+  },
+  {
+    id: 'inv5',
+    ingredientName: 'Curd / Yogurt tub',
+    quantity: 0,
+    unit: '',
+    lowStockThreshold: 0,
+    trackType: 'expiry',
+    expiryDate: isoDaysFromNow(1),
+    lowFlag: true,
+  },
+  {
+    id: 'inv6',
+    ingredientName: 'Paneer block',
+    quantity: 0,
+    unit: '',
+    lowStockThreshold: 0,
+    trackType: 'expiry',
+    expiryDate: isoDaysFromNow(6),
+    lowFlag: false,
+  },
+  {
+    id: 'inv7',
+    ingredientName: 'Butter',
+    quantity: 180,
+    unit: 'g',
+    lowStockThreshold: 50,
+    trackType: 'quantity',
+    lowFlag: false,
+  },
+];
+
+export const cookBatches: CookBatch[] = [
+  {
+    id: 'b1',
+    dishName: 'Grilled Lemon Chicken',
+    sourceType: 'component',
+    componentId: 'c1',
+    category: 'Protein',
+    servingsMade: 6,
+    servingsRemaining: 4,
+    servingsAllocated: 1,
+    storageLocation: 'fridge',
+    cookedDate: isoHoursAgo(20),
+    photo: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80',
+    wasted: false,
+  },
+  {
+    id: 'b2',
+    dishName: 'Steamed Jasmine Rice',
+    sourceType: 'component',
+    componentId: 'c2',
+    category: 'Grain',
+    servingsMade: 8,
+    servingsRemaining: 5,
+    servingsAllocated: 2,
+    storageLocation: 'fridge',
+    cookedDate: isoHoursAgo(44),
+    photo: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=600&q=80',
+    wasted: false,
+  },
+  {
+    id: 'b3',
+    dishName: 'Sunday Dal Makhani',
+    sourceType: 'recipe',
+    recipeId: 'r2',
+    category: 'Dinner',
+    servingsMade: 6,
+    servingsRemaining: 6,
+    servingsAllocated: 0,
+    storageLocation: 'freezer',
+    cookedDate: isoHoursAgo(96),
+    photo: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=600&q=80',
+    wasted: false,
+  },
+  {
+    id: 'b4',
+    dishName: 'Roasted Broccoli & Carrots',
+    sourceType: 'component',
+    componentId: 'c3',
+    category: 'Veg',
+    servingsMade: 6,
+    servingsRemaining: 1,
+    servingsAllocated: 0,
+    storageLocation: 'fridge',
+    cookedDate: isoHoursAgo(70),
+    photo: 'https://images.unsplash.com/photo-1447175008436-054170c2e979?w=600&q=80',
+    wasted: false,
+  },
+];
+
+export const mealPlan: MealPlanEntry[] = [
+  {
+    id: 'mp1',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Mon',
+    mealType: 'Dinner',
+    isBowl: true,
+    componentIds: ['c1', 'c2', 'c3'],
+    cooked: true,
+    cookedDate: isoHoursAgo(20),
+    servingsMade: 1,
+    batchId: 'b1',
+  },
+  {
+    id: 'mp2',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Tue',
+    mealType: 'Dinner',
+    recipeId: 'r1',
+    isBowl: false,
+    cooked: false,
+  },
+  {
+    id: 'mp3',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Wed',
+    mealType: 'Lunch',
+    isBowl: true,
+    componentIds: ['c1', 'c2'],
+    cooked: false,
+  },
+  {
+    id: 'mp4',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Wed',
+    mealType: 'Dinner',
+    recipeId: 'r2',
+    isBowl: false,
+    cooked: false,
+  },
+  {
+    id: 'mp5',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Thu',
+    mealType: 'Dinner',
+    customName: 'Leftover fried rice',
+    isBowl: false,
+    cooked: false,
+  },
+  {
+    id: 'mp6',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Fri',
+    mealType: 'Dinner',
+    isBowl: true,
+    componentIds: ['c1', 'c2', 'c4'],
+    cooked: false,
+  },
+  {
+    id: 'mp7',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Mon',
+    mealType: 'Breakfast',
+    recipeId: 'r3',
+    isBowl: false,
+    cooked: true,
+    cookedDate: isoHoursAgo(28),
+  },
+  {
+    id: 'mp8',
+    weekStart: WEEK_START,
+    dayOfWeek: 'Staging',
+    mealType: 'Staging',
+    recipeId: 'r4',
+    isBowl: false,
+    cooked: false,
+  },
+];
+
+export const groceryExtras: GroceryExtra[] = [
+  { id: 'ge1', weekStart: WEEK_START, itemName: 'Dish soap', checked: false, price: 89 },
+  { id: 'ge2', weekStart: WEEK_START, itemName: 'Coffee filters', checked: true, price: 120 },
+];
+
+export const expenses: Expense[] = [
+  {
+    id: 'e1',
+    itemName: 'Weekly grocery run — Big Bazaar',
+    amount: 1840,
+    quantity: 1,
+    unit: 'trip',
+    expenseDate: isoDaysFromNow(-4),
+    category: 'groceries',
+  },
+  {
+    id: 'e2',
+    itemName: 'Chicken breast (2kg)',
+    amount: 620,
+    quantity: 2,
+    unit: 'kg',
+    expenseDate: isoDaysFromNow(-2),
+    category: 'groceries',
+  },
+  {
+    id: 'e3',
+    itemName: 'Biryani night with friends',
+    amount: 950,
+    quantity: 1,
+    unit: 'order',
+    expenseDate: isoDaysFromNow(-1),
+    category: 'eating_out',
+    note: 'Paid for two',
+  },
+  {
+    id: 'e4',
+    itemName: 'New storage containers',
+    amount: 540,
+    quantity: 6,
+    unit: 'pc',
+    expenseDate: isoDaysFromNow(-8),
+    category: 'other',
+  },
+];
+
+export const settings: Settings = {
+  monthlyBudget: 12000,
+};
+
+export const CATEGORY_SAFETY_HOURS: Record<string, number> = {
+  Protein: 72,
+  Seafood: 48,
+  Grain: 96,
+  Veg: 96,
+  Sauce: 96,
+  Dairy: 96,
+  Other: 96,
+};
