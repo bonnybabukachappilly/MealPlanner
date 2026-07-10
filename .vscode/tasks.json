@@ -1,0 +1,64 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Docker Compose: UP",
+            "type": "shell",
+            "linux": {
+                "command": "docker compose up --build"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Docker Compose: Down",
+            "type": "shell",
+            "linux": {
+                "command": "docker compose down"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Alembic: Make Migrations",
+            "type": "shell",
+            "linux": {
+                "command": "docker compose exec backend uv run alembic revision --autogenerate -m \"${input:migrateMessage}\""
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Alembic: Migrate",
+            "type": "shell",
+            "linux": {
+                "command": "docker compose exec backend uv run alembic upgrade head"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Alembic: Handle Migrations",
+            "type": "shell",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Alembic: Make Migrations",
+                "Alembic: Migrate",
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+    ],
+    "inputs": [
+        {
+            "id": "migrateMessage",
+            "type": "promptString",
+            "description": "Enter Migration Message"
+        }
+    ]
+}

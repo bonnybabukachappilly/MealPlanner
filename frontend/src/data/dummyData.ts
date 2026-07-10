@@ -124,24 +124,6 @@ export const components: MealComponent[] = [
     ],
   },
   {
-    id: 'c100',
-    name: 'Grilled Lemon Chicken',
-    category: 'Protein',
-    servings: 6,
-    prepTime: '30 min',
-    instructions:
-      'Marinate chicken breast in lemon juice, garlic, and olive oil for 20 minutes.\nGrill or pan-sear until cooked through and lightly charred.\nRest, then slice.',
-    tags: ['high-protein', 'freezer-ok'],
-    rating: 5,
-    photo: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?w=600&q=80',
-    sourceUrls: [],
-    createdAt: isoDaysFromNow(-30),
-    ingredients: [
-      { id: 'ci1', name: 'Chicken breast', quantity: 900, unit: 'g', aisle: 'Meat' },
-      { id: 'ci2', name: 'Lemon', quantity: 2, unit: 'pc', aisle: 'Produce' },
-    ],
-  },
-  {
     id: 'c2',
     name: 'Steamed Jasmine Rice',
     category: 'Grain',
@@ -208,7 +190,7 @@ export const customDishes: CustomDish[] = [
 export const inventory: InventoryItem[] = [
   {
     id: 'inv1',
-    ingredientName: 'Jasmine rice',
+    itemName: 'Jasmine rice',
     quantity: 1200,
     unit: 'g',
     lowStockThreshold: 300,
@@ -217,7 +199,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv2',
-    ingredientName: 'Chicken breast',
+    itemName: 'Chicken breast',
     quantity: 150,
     unit: 'g',
     lowStockThreshold: 400,
@@ -226,7 +208,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv3',
-    ingredientName: 'Tahini',
+    itemName: 'Tahini',
     quantity: 40,
     unit: 'g',
     lowStockThreshold: 100,
@@ -235,7 +217,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv4',
-    ingredientName: 'Milk',
+    itemName: 'Milk',
     quantity: 0,
     unit: '',
     lowStockThreshold: 0,
@@ -245,7 +227,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv5',
-    ingredientName: 'Curd / Yogurt tub',
+    itemName: 'Curd / Yogurt tub',
     quantity: 0,
     unit: '',
     lowStockThreshold: 0,
@@ -255,7 +237,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv6',
-    ingredientName: 'Paneer block',
+    itemName: 'Paneer block',
     quantity: 0,
     unit: '',
     lowStockThreshold: 0,
@@ -265,7 +247,7 @@ export const inventory: InventoryItem[] = [
   },
   {
     id: 'inv7',
-    ingredientName: 'Butter',
+    itemName: 'Butter',
     quantity: 180,
     unit: 'g',
     lowStockThreshold: 50,
@@ -348,24 +330,6 @@ export const mealPlan: MealPlanEntry[] = [
   },
   {
     id: 'mp2',
-    weekStart: WEEK_START,
-    dayOfWeek: 'Tue',
-    mealType: 'Dinner',
-    recipeId: 'r1',
-    isBowl: false,
-    cooked: false,
-  },
-  {
-    id: 'mp21',
-    weekStart: WEEK_START,
-    dayOfWeek: 'Tue',
-    mealType: 'Dinner',
-    recipeId: 'r1',
-    isBowl: false,
-    cooked: false,
-  },
-  {
-    id: 'mp22',
     weekStart: WEEK_START,
     dayOfWeek: 'Tue',
     mealType: 'Dinner',

@@ -102,7 +102,7 @@ export function Dashboard() {
             <ul className="list">
               {lowStock.map((i) => (
                 <li key={i.id} className="list-row">
-                  <span className="list-row__title">{i.ingredientName}</span>
+                  <span className="list-row__title">{i.itemName}</span>
                   <span className="pill pill--warn">
                     {i.quantity}
                     {i.unit} left
@@ -125,7 +125,7 @@ export function Dashboard() {
                 const days = daysUntil(i.expiryDate!);
                 return (
                   <li key={i.id} className="list-row">
-                    <span className="list-row__title">{i.ingredientName}</span>
+                    <span className="list-row__title">{i.itemName}</span>
                     <span className={days <= 1 ? 'pill pill--danger' : 'pill pill--warn'}>
                       {days <= 0 ? 'today' : `${days}d left`}
                     </span>

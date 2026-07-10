@@ -12,7 +12,7 @@ export type MealType =
 
 export type StorageLocation = 'fridge' | 'freezer';
 
-export type TrackType = 'quantity' | 'expiry';
+export type TrackType = 'quantity' | 'expiry' | 'untrack';
 
 export type ExpenseCategory = 'groceries' | 'eating_out' | 'other';
 
@@ -63,11 +63,12 @@ export interface CustomDish {
 
 export interface InventoryItem {
   id: string;
-  ingredientName: string;
-  quantity: number;
-  unit: string;
-  lowStockThreshold: number;
+  itemName: string;
+  quantity?: number;
+  unit?: string;
+  lowStockThreshold?: number;
   expiryDate?: string;
+  expiryDateThreshold?: number;
   trackType: TrackType;
   lowFlag: boolean;
 }

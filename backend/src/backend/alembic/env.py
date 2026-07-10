@@ -7,9 +7,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from backend import models  # noqa: F401
-from backend.settings import Settings, get_settings
-from backend.database import Base
+from backend.db import models  # noqa: F401
+from backend.core import Settings, get_settings
+from backend.db import Base
 
 
 # this is the Alembic Config object, which provides

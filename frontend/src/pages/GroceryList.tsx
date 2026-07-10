@@ -54,7 +54,7 @@ export function GroceryList() {
 
     for (const item of needed.values()) {
       const stock = inventory.find(
-        (i) => i.trackType === 'quantity' && i.ingredientName.toLowerCase() === item.name.toLowerCase()
+        (i) => i.trackType === 'quantity' && i.itemName.toLowerCase() === item.name.toLowerCase()
       );
       item.have = stock?.quantity ?? 0;
     }
@@ -109,7 +109,7 @@ export function GroceryList() {
           <ul className="list">
             {restock.map((i) => (
               <li key={i.id} className="list-row">
-                <span className="list-row__title">{i.ingredientName}</span>
+                <span className="list-row__title">{i.itemName}</span>
                 <span className="pill pill--warn">marked low</span>
               </li>
             ))}
