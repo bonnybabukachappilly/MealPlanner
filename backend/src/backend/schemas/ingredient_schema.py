@@ -3,8 +3,6 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
-from backend.domain import Ingredient
-
 
 class IngredientResponse(BaseModel):
     id: UUID
@@ -15,13 +13,6 @@ class IngredientResponse(BaseModel):
 class CreateIngredientRequest(BaseModel):
     name: str
     aisle: str
-
-    def convert(self, idx: UUID) -> Ingredient:
-        return Ingredient(
-            id=idx,
-            name=self.name,
-            aisle=self.aisle.capitalize()
-        )
 
 
 class UpdateIngredientRequest(BaseModel):

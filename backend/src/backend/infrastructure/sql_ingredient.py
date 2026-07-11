@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.domain import Ingredient
 from backend.db.models import IngredientModel
-from backend.domain import IngredientRepo
+from backend.domain.repositories import IngredientRepo
 from backend.exceptions.general import ItemNotFound
 
 
@@ -56,7 +56,7 @@ class SQLIngredientRepo(IngredientRepo):
         model: Optional[IngredientModel] = result.scalar_one_or_none()
 
         if model is None:
-            raise ItemNotFound(f'Ingredient {data.id} not found')
+            raise ItemNotFound(f'Ingredient with id: {data.id} not found')
 
         model.name = data.name
         model.aisle = data.aisle

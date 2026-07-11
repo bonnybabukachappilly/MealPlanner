@@ -4,7 +4,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.domain import Ingredient, IngredientRepo
+from backend.domain import Ingredient
+from backend.domain.repositories import IngredientRepo
 from backend.schemas import UpdateIngredientRequest
 from backend.exceptions.general import ItemNotFound
 

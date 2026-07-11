@@ -3,8 +3,7 @@ from typing import Optional, cast
 from uuid import uuid4
 
 from backend.exceptions.general import DuplicateEntryFound
-from backend.domain import InventoryTrackType, Inventory
-from backend.domain.entities.ingredient import Ingredient
+from backend.domain import InventoryTrackType, Inventory, Ingredient
 from backend.domain.repositories import InventoryRepo, IngredientRepo
 from backend.schemas import CreateInventoryRequest
 

@@ -2,7 +2,8 @@
 from typing import Optional
 from uuid import UUID
 
-from backend.domain import Ingredient, IngredientRepo
+from backend.domain import Ingredient
+from backend.domain.repositories import IngredientRepo
 
 
 class GetIngredient:
