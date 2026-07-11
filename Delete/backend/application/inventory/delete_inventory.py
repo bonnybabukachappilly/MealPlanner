@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.domain import Inventory
 from backend.domain.repositories import InventoryRepo
-from backend.exceptions.general import ItemNotFoundException
+from backend.exceptions.general import ItemNotFound
 
 
 class DeleteInventory:
@@ -17,7 +17,7 @@ class DeleteInventory:
         _exists: Optional[Inventory] = await self._repo.get_by_id(idx)
 
         if _exists is None:
-            raise ItemNotFoundException(
+            raise ItemNotFound(
                 f'Unable to find Inventory with id {idx}'
             )
 

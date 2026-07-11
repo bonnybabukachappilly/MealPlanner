@@ -1,5 +1,5 @@
-from .inventory import SQLInventoryRepo
+from .sql_ingredient import SQLIngredientRepo
 
 __all__: list[str] = [
-    'SQLInventoryRepo'
+    'SQLIngredientRepo'
 ]

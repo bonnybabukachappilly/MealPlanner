@@ -15,6 +15,11 @@ class InventoryRepo(ABC):
         ...
 
     @abstractmethod
+    async def get_by_ingredient_id(
+            self, ingredient_id: UUID) -> Optional[Inventory]:
+        ...
+
+    @abstractmethod
     async def get_by_name(self, name: str) -> Optional[Inventory]:
         ...
 

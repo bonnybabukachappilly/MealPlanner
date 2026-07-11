@@ -2,12 +2,15 @@ from datetime import date
 from typing import Any, Optional
 from uuid import UUID, uuid4
 
-from sqlalchemy import String, Numeric, Date, Enum as SQLEnum, Boolean
+from sqlalchemy import (
+    String, Numeric, Date, Enum as SQLEnum, Boolean, ForeignKey
+)
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from backend.db import Base
 from backend.domain import InventoryTrackType
+from backend.db.models import IngredientModel
 
 
 class InventoryModel(Base):
@@ -19,10 +22,14 @@ class InventoryModel(Base):
         default=uuid4
     )
 
-    item_name: Mapped[str] = mapped_column(
-        String(100),
-        nullable=False
+    ingredient_id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey('ingredients.id', ondelete='RESTRICT'),
+        nullable=False,
+        unique=True
     )
+
+    ingredient: Mapped["IngredientModel"] = relationship(lazy='joined')
 
     quantity: Mapped[Optional[float]] = mapped_column(
         Numeric(10, 2),

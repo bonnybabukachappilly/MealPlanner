@@ -1,14 +1,13 @@
-# backend/domain/repositories/inventory_repository.py
-
-from typing import Optional, Tuple
+from typing import Optional
 from uuid import UUID
 
-from backend.exceptions.general import ItemNotFoundException
+from backend.exceptions.general import ItemNotFound
 from sqlalchemy import Result, select, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.db.models import InventoryModel
+from backend.db.models import InventoryModel, IngredientModel
 from backend.domain import Inventory
+from backend.domain.entities.ingredient import Ingredient
 from backend.domain.repositories import InventoryRepo
 
 
@@ -25,10 +24,22 @@ class SQLInventoryRepo(InventoryRepo):
 
         return self._to_entity(model) if model else None
 
+    async def get_by_ingredient_id(
+            self, ingredient_id: UUID) -> Optional[Inventory]:
+        _result: Result[tuple[InventoryModel]] = await self._session.execute(
+            select(InventoryModel)
+            .where(InventoryModel.ingredient_id == ingredient_id)
+        )
+
+        model: Optional[InventoryModel] = _result.scalar_one_or_none()
+
+        return self._to_entity(model) if model else None
+
     async def get_by_name(self, name: str) -> Optional[Inventory]:
         _result: Result[tuple[InventoryModel]] = await self._session.execute(
             select(InventoryModel)
-            .where(func.lower(InventoryModel.item_name) == name.lower())
+            .join(IngredientModel)
+            .where(func.lower(IngredientModel.name) == name.lower())
         )
 
         model: Optional[InventoryModel] = _result.scalar_one_or_none()
@@ -54,9 +65,9 @@ class SQLInventoryRepo(InventoryRepo):
         model: Optional[InventoryModel] = _result.scalar_one_or_none()
 
         if model is None:
-            raise ItemNotFoundException(f"Inventory {data.id} not found")
+            raise ItemNotFound(f"Inventory {data.id} not found")
 
-        model.item_name = data.item_name
+        model.ingredient_id = data.ingredient.id
         model.quantity = data.quantity
         model.unit = data.unit
         model.low_stock_threshold = data.low_stock_threshold
@@ -74,7 +85,12 @@ class SQLInventoryRepo(InventoryRepo):
     def _to_entity(model: InventoryModel) -> Inventory:
         return Inventory(
             id=model.id,
-            item_name=model.item_name,
+            ingredient=Ingredient(
+                id=model.ingredient.id,
+                name=model.ingredient.name,
+                default_unit=model.ingredient.default_unit,
+                default_aisle=model.ingredient.default_aisle
+            ),
             quantity=model.quantity,
             unit=model.unit,
             low_stock_threshold=model.low_stock_threshold,
@@ -88,7 +104,7 @@ class SQLInventoryRepo(InventoryRepo):
     def _from_entity(entity: Inventory) -> InventoryModel:
         return InventoryModel(
             id=entity.id,
-            item_name=entity.item_name,
+            ingredient_id=entity.ingredient.id,
             quantity=entity.quantity,
             unit=entity.unit,
             low_stock_threshold=entity.low_stock_threshold,

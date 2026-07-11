@@ -4,6 +4,8 @@ from datetime import date
 from typing import Optional
 from uuid import UUID
 
+from .ingredient import Ingredient
+
 
 class InventoryTrackType(str, Enum):
     QUANTITY = "quantity"
@@ -14,7 +16,7 @@ class InventoryTrackType(str, Enum):
 @dataclass
 class Inventory:
     id: UUID
-    item_name: str
+    ingredient: Ingredient
     quantity: Optional[float]
     unit: Optional[str]
     low_stock_threshold: Optional[float]

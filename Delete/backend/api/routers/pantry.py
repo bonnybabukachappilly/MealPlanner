@@ -13,7 +13,7 @@ from backend.application.inventory import (
     DeleteInventory, UpdateInventory
 )
 from backend.exceptions.general import (
-    DuplicateEntryException, ItemNotFoundException
+    DuplicateEntryFound, ItemNotFound
 )
 
 router = APIRouter(prefix='/pantry', tags=['Pantry'])
@@ -67,7 +67,7 @@ async def create(
 
         await session.commit()
 
-    except DuplicateEntryException as e:
+    except DuplicateEntryFound as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -92,7 +92,7 @@ async def update(
         data: Optional[Inventory] = await use_case.execute(idx, body)
         await session.commit()
 
-    except DuplicateEntryException as e:
+    except DuplicateEntryFound as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -115,7 +115,7 @@ async def delete(
 
         )
 
-    except ItemNotFoundException as e:
+    except ItemNotFound as e:
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

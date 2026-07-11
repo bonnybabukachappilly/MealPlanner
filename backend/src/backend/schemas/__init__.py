@@ -1,8 +1,7 @@
-from .inventory import (
-    InventoryResponse, CreateInventoryRequest
+from .ingredient_schema import (
+    CreateIngredientRequest, UpdateIngredientRequest, IngredientResponse
 )
 
-
 __all__: list[str] = [
-    'InventoryResponse', 'CreateInventoryRequest'
+    'CreateIngredientRequest', 'UpdateIngredientRequest', 'IngredientResponse'
 ]

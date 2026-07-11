@@ -1,28 +1,29 @@
 from datetime import date, timedelta
 from typing import Optional, cast
-from uuid import uuid4
+from uuid import UUID
 
-from backend.exceptions.general import DuplicateEntryException
-from backend.domain import InventoryTrackType, Inventory
-from backend.domain.repositories import InventoryRepo
 from backend.schemas import CreateInventoryRequest
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from backend.domain import Inventory, InventoryTrackType
+from backend.domain.repositories import InventoryRepo
+from backend.exceptions.general import ItemNotFound
 
-class CreateInventory:
+
+class UpdateInventory:
     def __init__(self, repo: InventoryRepo, session: AsyncSession) -> None:
         self._repo: InventoryRepo = repo
         self._session: AsyncSession = session
 
-    async def execute(self, schema: CreateInventoryRequest) -> Inventory:
+    async def execute(
+            self, idx: UUID,
+            schema: CreateInventoryRequest) -> Optional[Inventory]:
+        _model: Optional[Inventory] = await self._repo.get_by_id(idx)
 
-        existing: Optional[Inventory] = await self._repo.get_by_name(
-            schema.item_name)
-
-        if existing:
-            raise DuplicateEntryException(
-                f'An item with name \'{schema.item_name}\' exists')
+        if _model is None:
+            raise ItemNotFound(
+                f'Unable to find Inventory with id {idx}'
+            )
 
         _low_flag: bool = False
 
@@ -48,19 +49,20 @@ class CreateInventory:
                 if schema.low_flag:
                     _low_flag = schema.low_flag
 
-        data = Inventory(
-            id=uuid4(),
-            item_name=schema.item_name,
-            quantity=schema.quantity,
-            unit=schema.unit,
-            low_stock_threshold=schema.low_stock_threshold,
-            expiry_date=schema.expiry_date,
-            expiry_date_threshold=schema.expiry_date_threshold,
-            track_type=schema.track_type,
-            low_flag=_low_flag
-        )
+        _model.quantity = schema.quantity
+        _model.unit = schema.unit
+        _model.low_stock_threshold = schema.low_stock_threshold
+        _model.expiry_date = schema.expiry_date
+        _model.expiry_date_threshold = schema.expiry_date_threshold
+        _model.track_type = schema.track_type
+        _model.low_flag = _low_flag
 
-        await self._repo.add(data)
-        await self._session.flush()
+        try:
+            await self._repo.update(_model)
+            await self._session.flush()
 
-        return data
+        except ItemNotFound as e:
+            await self._session.rollback()
+            raise ItemNotFound from e
+
+        return await self._repo.get_by_id(idx)

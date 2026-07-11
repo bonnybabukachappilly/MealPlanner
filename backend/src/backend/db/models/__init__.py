@@ -1,6 +1,6 @@
-from backend.db.models.inventory import InventoryModel
+from .ingredient_model import IngredientModel
 
 
 __all__: list[str] = [
-    'InventoryModel'
+    'IngredientModel',
 ]

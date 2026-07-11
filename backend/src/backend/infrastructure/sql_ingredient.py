@@ -1,0 +1,84 @@
+from typing import Optional, Sequence
+from uuid import UUID
+
+from sqlalchemy import Result, select, delete
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from backend.domain import Ingredient
+from backend.db.models import IngredientModel
+from backend.domain import IngredientRepo
+from backend.exceptions.general import ItemNotFound
+
+
+class SQLIngredientRepo(IngredientRepo):
+    def __init__(self, session: AsyncSession) -> None:
+        self._session: AsyncSession = session
+
+    async def get_by_id(self, idx: UUID) -> Optional[Ingredient]:
+        result: Result[tuple[IngredientModel]] = await self._session.execute(
+            select(IngredientModel)
+            .where(IngredientModel.id == idx)
+        )
+
+        model: Optional[IngredientModel] = result.scalar_one_or_none()
+
+        return self._to_entity(model) if model else None
+
+    async def get_by_name(self, name: str) -> Optional[Ingredient]:
+        result: Result[tuple[IngredientModel]] = await self._session.execute(
+            select(IngredientModel)
+            .where(IngredientModel.name == name)
+        )
+
+        model: Optional[IngredientModel] = result.scalar_one_or_none()
+
+        return self._to_entity(model) if model else None
+
+    async def get_all(self,) -> list[Ingredient | None]:
+        result: Result[tuple[IngredientModel]] = await self._session.execute(
+            select(IngredientModel)
+        )
+
+        models: Sequence[IngredientModel] = result.scalars().all()
+
+        return [self._to_entity(model) for model in models]
+
+    async def create(self, data: Ingredient) -> None:
+        model: IngredientModel = self._to_model(data)
+        self._session.add(model)
+
+    async def update(self, data: Ingredient) -> None:
+        result: Result[tuple[IngredientModel]] = await self._session.execute(
+            select(IngredientModel)
+            .where(IngredientModel.id == data.id)
+        )
+
+        model: Optional[IngredientModel] = result.scalar_one_or_none()
+
+        if model is None:
+            raise ItemNotFound(f'Ingredient {data.id} not found')
+
+        model.name = data.name
+        model.aisle = data.aisle
+
+    async def delete(self, idx: UUID) -> None:
+        await self._session.execute(
+            delete(IngredientModel)
+            .where(IngredientModel.id == idx)
+        )
+
+    @staticmethod
+    def _to_entity(model: IngredientModel) -> Ingredient:
+        return Ingredient(
+            id=model.id,
+            name=model.name,
+            aisle=model.aisle
+        )
+
+    @staticmethod
+    def _to_model(entity: Ingredient) -> IngredientModel:
+        return IngredientModel(
+            id=entity.id,
+            name=entity.name,
+            aisle=entity.aisle
+        )
