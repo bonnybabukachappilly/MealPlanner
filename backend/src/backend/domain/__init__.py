@@ -1,6 +1,7 @@
 from .entities.ingredient import Ingredient
-from .repositories.ingredient_repo import IngredientRepo
+from .entities.pantry import Pantry, PantryTrackType
 
 __all__: list[str] = [
-    'Ingredient', 'IngredientRepo'
+    'Ingredient',
+    'Pantry', 'PantryTrackType',
 ]

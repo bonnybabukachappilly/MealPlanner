@@ -1,10 +1,10 @@
-
 from typing import Optional
 from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.domain import Ingredient, IngredientRepo
+from backend.domain import Ingredient
+from backend.domain.repositories import IngredientRepo
 from backend.schemas import CreateIngredientRequest
 from backend.exceptions.general import DuplicateEntryFound, DBCreationFailed
 
@@ -24,7 +24,13 @@ class CreateIngredient:
 
         idx: UUID = uuid4()
 
-        await self._repo.create(schema.convert(idx))
+        ingredient = Ingredient(
+            id=idx,
+            name=schema.name,
+            aisle=schema.aisle.capitalize()
+        )
+
+        await self._repo.create(ingredient)
         await self._session.flush()
 
         model: Optional[Ingredient] = await self._repo.get_by_id(idx)

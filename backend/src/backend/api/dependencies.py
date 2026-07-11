@@ -5,7 +5,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.db import get_db_session
-from backend.infrastructure import SQLIngredientRepo
+from backend.infrastructure import (
+    SQLIngredientRepo, SQLPantryRepo
+)
 
 
 # ---------- Session dependency ----------
@@ -26,3 +28,10 @@ def get_ingredient_repo(session: SessionDeps) -> SQLIngredientRepo:
 
 
 IngredientDeps = Annotated[SQLIngredientRepo, Depends(get_ingredient_repo)]
+
+
+def get_pantry_repo(session: SessionDeps) -> SQLPantryRepo:
+    return SQLPantryRepo(session)
+
+
+PantryDeps = Annotated[SQLPantryRepo, Depends(get_pantry_repo)]

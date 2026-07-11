@@ -2,39 +2,39 @@ from typing import Optional
 from uuid import UUID
 
 
-from backend.domain import Ingredient
+from backend.domain import Pantry
 from fastapi import APIRouter, HTTPException, status
 
-from backend.application.ingredient import (
-    GetIngredient, GetIngredients,
-    CreateIngredient, UpdateIngredient,
-    DeleteIngredient
+from backend.application.pantry import (
+    GetPantry, GetPantries,
+    CreatePantry, UpdatePantry,
+    DeletePantry
 )
-from backend.api.dependencies import IngredientDeps, SessionDeps
+from backend.api.dependencies import PantryDeps, SessionDeps, IngredientDeps
 from backend.exceptions.general import (
     DuplicateEntryFound, DBCreationFailed,
     ItemNotFound
 )
 from backend.schemas import (
-    IngredientResponse, CreateIngredientRequest,
-    UpdateIngredientRequest
+    PantryResponse, CreatePantryRequest,
+    UpdatePantryRequest
 )
 
 
-router = APIRouter(prefix='/ingredient', tags=['Ingredients'])
+router = APIRouter(prefix='/pantry', tags=['Pantries'])
 
 
 @router.get(
     path='',
-    response_model=list[IngredientResponse | None],
+    response_model=list[PantryResponse | None],
     status_code=status.HTTP_200_OK)
-async def get_all(repo: IngredientDeps) -> list[IngredientResponse | None]:
-    use_case = GetIngredients(repo)
+async def get_all(repo: PantryDeps) -> list[PantryResponse | None]:
+    use_case = GetPantries(repo)
 
-    data: list[Ingredient | None] = await use_case.execute()
+    data: list[Pantry | None] = await use_case.execute()
 
     return [
-        IngredientResponse.model_validate(
+        PantryResponse.model_validate(
             d, from_attributes=True
         ) for d in (data or [])
     ]
@@ -42,16 +42,16 @@ async def get_all(repo: IngredientDeps) -> list[IngredientResponse | None]:
 
 @router.get(
     path='/{idx}',
-    response_model=Optional[IngredientResponse],
+    response_model=Optional[PantryResponse],
     status_code=status.HTTP_200_OK)
 async def get_one(
-        idx: UUID, repo: IngredientDeps) -> Optional[IngredientResponse]:
-    use_case = GetIngredient(repo)
+        idx: UUID, repo: PantryDeps) -> Optional[PantryResponse]:
+    use_case = GetPantry(repo)
 
-    data: Optional[Ingredient] = await use_case.execute(idx)
+    data: Optional[Pantry] = await use_case.execute(idx)
 
     if data:
-        return IngredientResponse.model_validate(data, from_attributes=True)
+        return PantryResponse.model_validate(data, from_attributes=True)
 
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
@@ -61,17 +61,25 @@ async def get_one(
 
 @router.post(
     path='',
-    response_model=IngredientResponse,
+    response_model=PantryResponse,
     status_code=status.HTTP_201_CREATED)
 async def create(
-        body: CreateIngredientRequest,
+        body: CreatePantryRequest,
         session: SessionDeps,
-        repo: IngredientDeps) -> IngredientResponse:
-    use_case = CreateIngredient(repo, session)
+        inc_repo: IngredientDeps,
+        repo: PantryDeps) -> PantryResponse:
+    use_case = CreatePantry(repo, inc_repo, session)
 
     try:
-        data: Ingredient = await use_case.execute(body)
+        data: Pantry = await use_case.execute(body)
         await session.commit()
+
+    except ItemNotFound as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
 
     except DuplicateEntryFound as e:
         await session.rollback()
@@ -87,22 +95,22 @@ async def create(
             detail=str(e)
         ) from e
 
-    return IngredientResponse.model_validate(data, from_attributes=True)
+    return PantryResponse.model_validate(data, from_attributes=True)
 
 
 @router.patch(
     path='/{idx}',
-    response_model=IngredientResponse,
+    response_model=PantryResponse,
     status_code=status.HTTP_202_ACCEPTED)
 async def update(
     idx: UUID,
-        body: UpdateIngredientRequest,
+        body: UpdatePantryRequest,
         session: SessionDeps,
-        repo: IngredientDeps) -> IngredientResponse:
-    use_case = UpdateIngredient(repo, session)
+        repo: PantryDeps) -> PantryResponse:
+    use_case = UpdatePantry(repo, session)
 
     try:
-        data: Optional[Ingredient] = await use_case.execute(idx, body)
+        data: Optional[Pantry] = await use_case.execute(idx, body)
         await session.commit()
 
     except ItemNotFound as e:
@@ -112,7 +120,7 @@ async def update(
             detail=str(e)
         ) from e
 
-    return IngredientResponse.model_validate(data, from_attributes=True)
+    return PantryResponse.model_validate(data, from_attributes=True)
 
 
 @router.delete(
@@ -121,8 +129,8 @@ async def update(
 async def delete(
     idx: UUID,
         session: SessionDeps,
-        repo: IngredientDeps) -> None:
-    use_case = DeleteIngredient(repo, session)
+        repo: PantryDeps) -> None:
+    use_case = DeletePantry(repo, session)
 
     try:
         await use_case.execute(idx)
