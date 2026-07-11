@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { listPantryItems, updatePantryItem, createPantryItem, deletePantryItem } from '../api/pantry';
+import type { PantryFormData } from '../api/pantry';
 import { ApiError } from '../api/client';
 import { daysUntil } from '../utils/dates';
 import { PantryItemForm } from '../components/PantryItemForm';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import type { InventoryItem, TrackType } from '../types';
+import type { PantryEntry } from '../types';
 
 function messageFor(err: unknown): string {
   if (err instanceof ApiError) {
@@ -17,13 +18,13 @@ function messageFor(err: unknown): string {
 }
 
 export function Pantry() {
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [inventory, setInventory] = useState<PantryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<InventoryItem | null>(null);
+  const [editingItem, setEditingItem] = useState<PantryEntry | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PantryEntry | null>(null);
 
   useEffect(() => {
     listPantryItems()
@@ -36,10 +37,14 @@ export function Pantry() {
   const expiryItems = inventory.filter((i) => i.trackType === 'expiry');
   const untrackedItems = inventory.filter((i) => i.trackType === 'untrack');
 
-  function toggleLowFlag(item: InventoryItem) {
+  function toggleLowFlag(item: PantryEntry) {
     const next = !item.lowFlag;
     setInventory((prev) => prev.map((i) => (i.id === item.id ? { ...i, lowFlag: next } : i)));
-    updatePantryItem(item.id, { ...item, lowFlag: next }).catch(() => {
+    updatePantryItem(item.id, {
+      ingredientId: item.ingredientId,
+      trackType: item.trackType,
+      lowFlag: next,
+    }).catch(() => {
       setInventory((prev) => prev.map((i) => (i.id === item.id ? { ...i, lowFlag: item.lowFlag } : i)));
     });
   }
@@ -50,13 +55,13 @@ export function Pantry() {
     setFormOpen(true);
   }
 
-  function openEditForm(item: InventoryItem) {
+  function openEditForm(item: PantryEntry) {
     setEditingItem(item);
     setFormError(null);
     setFormOpen(true);
   }
 
-  function handleSave(data: Partial<InventoryItem> & { itemName: string; trackType: TrackType }) {
+  function handleSave(data: PantryFormData) {
     setFormError(null);
     const promise = editingItem ? updatePantryItem(editingItem.id, data) : createPantryItem(data);
 
@@ -107,7 +112,7 @@ export function Pantry() {
       {deleteTarget && (
         <ConfirmDialog
           title="Delete item"
-          message={`Delete "${deleteTarget.itemName}"? This can't be undone.`}
+          message={`Delete "${deleteTarget.ingredientName}"? This can't be undone.`}
           onConfirm={() => {
             handleDelete(deleteTarget.id);
             setDeleteTarget(null);
@@ -124,7 +129,7 @@ export function Pantry() {
               {quantityItems.map((item) => {
                 return (
                   <div key={item.id} className="pantry-row">
-                    <span className="pantry-row__name">{item.itemName}</span>
+                    <span className="pantry-row__name">{item.ingredientName}</span>
                     <span className="pantry-row__qty">
                       {item.quantity}
                       {item.unit}
@@ -151,12 +156,15 @@ export function Pantry() {
                 const days = item.expiryDate ? daysUntil(item.expiryDate) : null;
                 return (
                   <div key={item.id} className="pantry-row">
-                    <span className="pantry-row__name">{item.itemName}</span>
-                    <span className="pantry-row__qty">
-                      {days !== null ? (days <= 0 ? 'expires today' : `${days}d left`) : '—'}
-                    </span>
+                    <span className="pantry-row__name">{item.ingredientName}</span>
                     <span className={item.lowFlag ? 'pill pill--warn' : 'pill pill--ok'}>
-                      {item.lowFlag ? 'Low' : 'OK'}
+                      {days === null
+                        ? '—'
+                        : days <= 0
+                        ? 'Expires today'
+                        : item.lowFlag
+                        ? `Expiring soon · ${days}d left`
+                        : `${days}d left`}
                     </span>
                     <button className="icon-btn" title="Edit" onClick={() => openEditForm(item)}>
                       ✎
@@ -168,15 +176,16 @@ export function Pantry() {
                 );
               })}
             </div>
-            <p className="empty-note">
-              Low/OK here is calculated by the backend from the expiry threshold.
-            </p>
+            <p className="empty-note"></p>
 
             <h2>Untracked</h2>
             <div className="pantry-list">
               {untrackedItems.map((item) => (
                 <div key={item.id} className="pantry-row">
-                  <span className="pantry-row__name">{item.itemName}</span>
+                  <span className="pantry-row__name">{item.ingredientName}</span>
+                  <span className={item.lowFlag ? 'pill pill--warn' : 'pill pill--ok'}>
+                      {item.lowFlag ? 'Low stock' : 'Stocked'}
+                    </span>
                   <button
                     className={item.lowFlag ? 'btn btn--sm btn--accent' : 'btn btn--sm btn--ghost'}
                     onClick={() => toggleLowFlag(item)}

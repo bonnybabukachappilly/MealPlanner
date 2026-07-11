@@ -787,6 +787,33 @@
   font-size: 13px;
 }
 
+.pantry-ingredient-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pantry-ingredient-picker .link-btn {
+  align-self: flex-start;
+  font-size: 13px;
+}
+
+.pantry-new-ingredient {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--bg);
+}
+
+.pantry-new-ingredient__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
 /* ---------- planner ---------- */
 .page--wide {
   max-width: none;

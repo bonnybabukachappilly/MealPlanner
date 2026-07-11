@@ -1,0 +1,1 @@
+Add expired to pantry for dated item, also add option for adding both date and quantity

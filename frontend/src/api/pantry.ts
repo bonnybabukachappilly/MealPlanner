@@ -1,26 +1,34 @@
 import { client } from './client';
-import type { InventoryItem, TrackType } from '../types';
+import type { PantryEntry, TrackType } from '../types';
 
-// Shape returned by the backend (snake_case, matches the Pydantic schema)
+interface IngredientDTO {
+  id: string;
+  name: string;
+  aisle: string;
+}
+
+// Shape returned by the backend (snake_case, nested ingredient object)
 interface PantryItemDTO {
   id: string;
-  item_name: string;
+  ingredient: IngredientDTO;
   quantity: number | null;
   unit: string | null;
-  low_stock_threshold: number | null;
+  quantity_threshold: number | null;
   expiry_date: string | null;
   expiry_date_threshold: number | null;
   track_type: TrackType;
   low_flag: boolean;
 }
 
-function fromDTO(dto: PantryItemDTO): InventoryItem {
+function fromDTO(dto: PantryItemDTO): PantryEntry {
   return {
     id: dto.id,
-    itemName: dto.item_name,
+    ingredientId: dto.ingredient.id,
+    ingredientName: dto.ingredient.name,
+    aisle: dto.ingredient.aisle,
     quantity: dto.quantity ?? undefined,
     unit: dto.unit ?? undefined,
-    lowStockThreshold: dto.low_stock_threshold ?? undefined,
+    quantityThreshold: dto.quantity_threshold ?? undefined,
     expiryDate: dto.expiry_date ?? undefined,
     expiryDateThreshold: dto.expiry_date_threshold ?? undefined,
     trackType: dto.track_type,
@@ -28,18 +36,30 @@ function fromDTO(dto: PantryItemDTO): InventoryItem {
   };
 }
 
-// Builds the request body, only including fields relevant to trackType.
-// low_flag is server-computed for quantity/expiry, so it's omitted unless untrack.
-function toPayload(data: Partial<InventoryItem> & { itemName: string; trackType: TrackType }) {
+// What the form gives us. ingredientId is required for create; the backend
+// ignores it on update (PantryUpdateRequest excludes ingredient_id), so we
+// strip it there rather than pretend it does something.
+export interface PantryFormData {
+  ingredientId: string;
+  trackType: TrackType;
+  quantity?: number;
+  unit?: string;
+  quantityThreshold?: number;
+  expiryDate?: string;
+  expiryDateThreshold?: number;
+  lowFlag?: boolean;
+}
+
+function toCreatePayload(data: PantryFormData): Record<string, unknown> {
   const payload: Record<string, unknown> = {
-    item_name: data.itemName,
+    ingredient_id: data.ingredientId,
     track_type: data.trackType,
   };
 
   if (data.trackType === 'quantity') {
     payload.quantity = data.quantity;
     payload.unit = data.unit;
-    payload.low_stock_threshold = data.lowStockThreshold;
+    payload.quantity_threshold = data.quantityThreshold;
   }
 
   if (data.trackType === 'expiry') {
@@ -54,25 +74,27 @@ function toPayload(data: Partial<InventoryItem> & { itemName: string; trackType:
   return payload;
 }
 
-export function listPantryItems(): Promise<InventoryItem[]> {
+function toUpdatePayload(data: PantryFormData): Record<string, unknown> {
+  const payload = toCreatePayload(data);
+  delete payload.ingredient_id; // backend ignores/excludes this on PATCH
+  return payload;
+}
+
+export function listPantryItems(): Promise<PantryEntry[]> {
   return client.get<PantryItemDTO[]>('/api/pantry').then((items) => items.map(fromDTO));
 }
 
-export function getPantryItem(id: string): Promise<InventoryItem> {
+export function getPantryItem(id: string): Promise<PantryEntry> {
   return client.get<PantryItemDTO>(`/api/pantry/${id}`).then(fromDTO);
 }
 
-export function createPantryItem(
-  data: Partial<InventoryItem> & { itemName: string; trackType: TrackType }
-): Promise<InventoryItem> {
-  return client.post<PantryItemDTO>('/api/pantry', toPayload(data)).then(fromDTO);
+export function createPantryItem(data: PantryFormData): Promise<PantryEntry> {
+  return client.post<PantryItemDTO>('/api/pantry', toCreatePayload(data)).then(fromDTO);
 }
 
-export function updatePantryItem(
-  id: string,
-  data: Partial<InventoryItem> & { itemName: string; trackType: TrackType }
-): Promise<InventoryItem> {
-  return client.put<PantryItemDTO>(`/api/pantry/${id}`, toPayload(data)).then(fromDTO);
+export function updatePantryItem(id: string, data: PantryFormData): Promise<PantryEntry> {
+  // backend route is PATCH, not PUT — client.put() here would 405
+  return client.patch<PantryItemDTO>(`/api/pantry/${id}`, toUpdatePayload(data)).then(fromDTO);
 }
 
 export function deletePantryItem(id: string): Promise<void> {

@@ -61,12 +61,36 @@ export interface CustomDish {
   notes: string;
 }
 
+/**
+ * Mock/dummy-data shape only — used by Dashboard.tsx and GroceryList.tsx,
+ * which still read from data/dummyData.ts and haven't been wired to the
+ * real pantry API yet. Do not use this for anything touching /api/pantry.
+ */
 export interface InventoryItem {
   id: string;
   itemName: string;
   quantity?: number;
   unit?: string;
   lowStockThreshold?: number;
+  expiryDate?: string;
+  expiryDateThreshold?: number;
+  trackType: TrackType;
+  lowFlag: boolean;
+}
+
+/**
+ * Real backend shape for /api/pantry — pantry rows now reference a
+ * shared Ingredient (id/name/aisle) via ingredient_id instead of a
+ * free-text item_name.
+ */
+export interface PantryEntry {
+  id: string;
+  ingredientId: string;
+  ingredientName: string;
+  aisle: string;
+  quantity?: number;
+  unit?: string;
+  quantityThreshold?: number;
   expiryDate?: string;
   expiryDateThreshold?: number;
   trackType: TrackType;
