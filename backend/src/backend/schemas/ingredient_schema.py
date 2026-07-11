@@ -1,7 +1,7 @@
 from typing import Optional
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from backend.domain import Ingredient
 
@@ -25,5 +25,5 @@ class CreateIngredientRequest(BaseModel):
 
 
 class UpdateIngredientRequest(BaseModel):
-    name: Optional[str]
-    aisle: Optional[str]
+    name: Optional[str] = Field(default=None)
+    aisle: Optional[str] = Field(default=None)
