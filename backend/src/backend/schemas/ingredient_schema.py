@@ -20,7 +20,7 @@ class CreateIngredientRequest(BaseModel):
         return Ingredient(
             id=idx,
             name=self.name,
-            aisle=self.aisle
+            aisle=self.aisle.capitalize()
         )
 
 

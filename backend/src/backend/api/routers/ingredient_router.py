@@ -60,7 +60,7 @@ async def get_one(
 
 
 @router.post(
-    path='/',
+    path='',
     response_model=IngredientResponse,
     status_code=status.HTTP_201_CREATED)
 async def create(

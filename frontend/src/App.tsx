@@ -9,6 +9,7 @@ import { RecipeDetail } from './pages/RecipeDetail';
 import { BuildingBlocks } from './pages/BuildingBlocks';
 import { ComponentDetail } from './pages/ComponentDetail';
 import { Pantry } from './pages/Pantry';
+import { Ingredients } from './pages/Ingredients';
 import { GroceryList } from './pages/GroceryList';
 import { Expenses } from './pages/Expenses';
 import './App.css';
@@ -43,6 +44,7 @@ function App() {
             <Route path="/building-blocks" element={<BuildingBlocks />} />
             <Route path="/building-blocks/:id" element={<ComponentDetail />} />
             <Route path="/pantry" element={<Pantry />} />
+            <Route path="/ingredients" element={<Ingredients />} />
             <Route path="/grocery" element={<GroceryList />} />
             <Route path="/expenses" element={<Expenses />} />
           </Routes>

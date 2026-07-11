@@ -7,6 +7,7 @@ const TABS = [
   { to: '/recipes', label: 'Recipes' },
   { to: '/building-blocks', label: 'Building Blocks' },
   { to: '/pantry', label: 'Pantry' },
+  { to: '/ingredients', label: 'Ingredients' },
   { to: '/grocery', label: 'Grocery List' },
   { to: '/expenses', label: 'Expenses' },
 ];
