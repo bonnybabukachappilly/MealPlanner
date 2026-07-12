@@ -3,17 +3,19 @@ import { client } from './client';
 export interface IngredientItem {
     id: string;
     name: string;
+    unit: string;
     aisle: string;
 }
 
 interface IngredientDTO {
     id: string;
     name: string;
+    unit: string;
     aisle: string;
 }
 
 function fromDTO(dto: IngredientDTO): IngredientItem {
-    return { id: dto.id, name: dto.name, aisle: dto.aisle };
+    return { id: dto.id, name: dto.name, unit: dto.unit, aisle: dto.aisle };
 }
 
 export function listIngredients(): Promise<IngredientItem[]> {
@@ -24,7 +26,7 @@ export function getIngredient(id: string): Promise<IngredientItem> {
     return client.get<IngredientDTO>(`/api/ingredient/${id}`).then(fromDTO);
 }
 
-export function createIngredient(data: { name: string; aisle: string }): Promise<IngredientItem> {
+export function createIngredient(data: { name: string; unit: string; aisle: string }): Promise<IngredientItem> {
     // trailing slash matters here — the router's POST is registered at path='/'
     return client.post<IngredientDTO>('/api/ingredient', data).then(fromDTO);
 }

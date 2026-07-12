@@ -1,11 +1,11 @@
 from .create import CreateIngredient
 from .delete import DeleteIngredient
-from .get import GetIngredient, GetIngredients
-from .update import UpdateIngredient
+from .get import GetIngredient, GetIngredients, GetIngredientsNotInPantry
+from .update import UpdateIngredient, UpdatePantryIngredient
 
 __all__: list[str] = [
     'CreateIngredient',
     'DeleteIngredient',
-    'GetIngredient', 'GetIngredients',
-    'UpdateIngredient'
+    'GetIngredient', 'GetIngredients', 'GetIngredientsNotInPantry',
+    'UpdateIngredient', 'UpdatePantryIngredient'
 ]

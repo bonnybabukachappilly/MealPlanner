@@ -9,15 +9,16 @@ export function IngredientForm({
 }: {
     initial?: IngredientItem;
     error?: string | null;
-    onSave: (data: { name: string; aisle: string }) => void;
+    onSave: (data: { name: string; unit: string; aisle: string }) => void;
     onCancel: () => void;
 }) {
     const [name, setName] = useState(initial?.name ?? '');
     const [aisle, setAisle] = useState(initial?.aisle ?? '');
+    const [unit, setUnit] = useState(initial?.unit ?? '');
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        onSave({ name, aisle });
+        onSave({ name, aisle, unit });
     }
 
     return (
@@ -33,6 +34,16 @@ export function IngredientForm({
                 <label className="form-field">
                     Aisle
                     <input className="input" value={aisle} onChange={(e) => setAisle(e.target.value)} required />
+                </label>
+
+                <label className="form-field">
+                    Unit
+                    <select className="input" value={unit} onChange={(e) => setUnit(e.target.value)} required>
+                        <option value="">Select unit…</option>
+                        <option value="g">g (mass)</option>
+                        <option value="ml">ml (volume)</option>
+                        <option value="pc">pc (count)</option>
+                    </select>
                 </label>
 
                 {error && <p className="form-error">{error}</p>}

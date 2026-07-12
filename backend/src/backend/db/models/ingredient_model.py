@@ -23,7 +23,17 @@ class IngredientModel(Base):
         unique=True
     )
 
+    unit: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False
+    )
+
     aisle: Mapped[str] = mapped_column(
         String(50),
         nullable=False
+    )
+
+    in_pantry: Mapped[bool] = mapped_column(
+        nullable=False,
+        default=False
     )

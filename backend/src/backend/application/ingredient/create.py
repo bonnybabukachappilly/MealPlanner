@@ -27,7 +27,9 @@ class CreateIngredient:
         ingredient = Ingredient(
             id=idx,
             name=schema.name,
-            aisle=schema.aisle.capitalize()
+            unit=schema.unit,
+            aisle=schema.aisle.capitalize(),
+            in_pantry=False
         )
 
         await self._repo.create(ingredient)

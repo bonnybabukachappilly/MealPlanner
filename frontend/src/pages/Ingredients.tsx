@@ -58,7 +58,7 @@ export function Ingredients() {
         setFormOpen(true);
     }
 
-    function handleSave(data: { name: string; aisle: string }) {
+    function handleSave(data: { name: string; unit: string; aisle: string }) {
         setFormError(null);
         const promise = editingItem
             ? updateIngredient(editingItem.id, data)
@@ -136,6 +136,7 @@ export function Ingredients() {
                                 {list.map((item) => (
                                     <div key={item.id} className="pantry-row">
                                         <span className="pantry-row__name">{item.name}</span>
+                                        <span className="pantry-row__qty">{item.unit}</span>
                                         <button className="icon-btn" title="Edit" onClick={() => openEditForm(item)}>
                                             ✎
                                         </button>

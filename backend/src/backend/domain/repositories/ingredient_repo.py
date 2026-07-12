@@ -16,7 +16,11 @@ class IngredientRepo(ABC):
         ...
 
     @abstractmethod
-    async def get_all(self,) -> list[Ingredient | None]:
+    async def get_all(self) -> list[Ingredient | None]:
+        ...
+
+    @abstractmethod
+    async def get_all_not_in_pantry(self) -> list[Ingredient | None]:
         ...
 
     @abstractmethod

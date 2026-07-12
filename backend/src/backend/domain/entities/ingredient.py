@@ -6,4 +6,6 @@ from uuid import UUID
 class Ingredient:
     id: UUID
     name: str
+    unit: str
     aisle: str
+    in_pantry: bool

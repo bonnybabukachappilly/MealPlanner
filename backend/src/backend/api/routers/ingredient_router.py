@@ -7,8 +7,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from backend.application.ingredient import (
     GetIngredient, GetIngredients,
-    CreateIngredient, UpdateIngredient,
-    DeleteIngredient
+    CreateIngredient, GetIngredientsNotInPantry, UpdateIngredient,
+    DeleteIngredient, UpdatePantryIngredient
 )
 from backend.api.dependencies import IngredientDeps, SessionDeps
 from backend.exceptions.general import (
@@ -17,7 +17,7 @@ from backend.exceptions.general import (
 )
 from backend.schemas import (
     IngredientResponse, CreateIngredientRequest,
-    UpdateIngredientRequest
+    UpdateIngredientRequest, UpdatePantryIngredientRequest
 )
 
 
@@ -30,6 +30,23 @@ router = APIRouter(prefix='/ingredient', tags=['Ingredients'])
     status_code=status.HTTP_200_OK)
 async def get_all(repo: IngredientDeps) -> list[IngredientResponse | None]:
     use_case = GetIngredients(repo)
+
+    data: list[Ingredient | None] = await use_case.execute()
+
+    return [
+        IngredientResponse.model_validate(
+            d, from_attributes=True
+        ) for d in (data or [])
+    ]
+
+
+@router.get(
+    path='',
+    response_model=list[IngredientResponse | None],
+    status_code=status.HTTP_200_OK)
+async def get_all_not_in_pantry(
+        repo: IngredientDeps) -> list[IngredientResponse | None]:
+    use_case = GetIngredientsNotInPantry(repo)
 
     data: list[Ingredient | None] = await use_case.execute()
 
@@ -100,6 +117,31 @@ async def update(
         session: SessionDeps,
         repo: IngredientDeps) -> IngredientResponse:
     use_case = UpdateIngredient(repo, session)
+
+    try:
+        data: Optional[Ingredient] = await use_case.execute(idx, body)
+        await session.commit()
+
+    except ItemNotFound as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+    return IngredientResponse.model_validate(data, from_attributes=True)
+
+
+@router.patch(
+    path='/{idx}/pantry',
+    response_model=IngredientResponse,
+    status_code=status.HTTP_202_ACCEPTED)
+async def update_pantry(
+    idx: UUID,
+        body: UpdatePantryIngredientRequest,
+        session: SessionDeps,
+        repo: IngredientDeps) -> IngredientResponse:
+    use_case = UpdatePantryIngredient(repo, session)
 
     try:
         data: Optional[Ingredient] = await use_case.execute(idx, body)

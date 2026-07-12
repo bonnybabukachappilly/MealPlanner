@@ -34,9 +34,19 @@ class SQLIngredientRepo(IngredientRepo):
 
         return self._to_entity(model) if model else None
 
-    async def get_all(self,) -> list[Ingredient | None]:
+    async def get_all(self) -> list[Ingredient | None]:
         result: Result[tuple[IngredientModel]] = await self._session.execute(
             select(IngredientModel)
+        )
+
+        models: Sequence[IngredientModel] = result.scalars().all()
+
+        return [self._to_entity(model) for model in models]
+
+    async def get_all_not_in_pantry(self) -> list[Ingredient | None]:
+        result: Result[tuple[IngredientModel]] = await self._session.execute(
+            select(IngredientModel)
+            .where(~IngredientModel.in_pantry)
         )
 
         models: Sequence[IngredientModel] = result.scalars().all()
@@ -72,7 +82,9 @@ class SQLIngredientRepo(IngredientRepo):
         return Ingredient(
             id=model.id,
             name=model.name,
-            aisle=model.aisle
+            unit=model.unit,
+            aisle=model.aisle,
+            in_pantry=model.in_pantry
         )
 
     @staticmethod
@@ -80,5 +92,7 @@ class SQLIngredientRepo(IngredientRepo):
         return IngredientModel(
             id=entity.id,
             name=entity.name,
-            aisle=entity.aisle
+            unit=entity.unit,
+            aisle=entity.aisle,
+            in_pantry=entity.in_pantry
         )

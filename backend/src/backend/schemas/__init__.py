@@ -1,5 +1,6 @@
 from .ingredient_schema import (
-    CreateIngredientRequest, UpdateIngredientRequest, IngredientResponse
+    CreateIngredientRequest, UpdateIngredientRequest,
+    IngredientResponse, UpdatePantryIngredientRequest
 )
 
 from .pantry_schema import (
@@ -7,6 +8,7 @@ from .pantry_schema import (
 )
 
 __all__: list[str] = [
-    'CreateIngredientRequest', 'UpdateIngredientRequest', 'IngredientResponse',
+    'CreateIngredientRequest', 'UpdateIngredientRequest',
+    'IngredientResponse', 'UpdatePantryIngredientRequest',
     'CreatePantryRequest', 'UpdatePantryRequest', 'PantryResponse',
 ]

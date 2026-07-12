@@ -20,3 +20,11 @@ class GetIngredients:
 
     async def execute(self) -> list[Ingredient | None]:
         return await self._repo.get_all()
+
+
+class GetIngredientsNotInPantry:
+    def __init__(self, repo: IngredientRepo) -> None:
+        self._repo: IngredientRepo = repo
+
+    async def execute(self) -> list[Ingredient | None]:
+        return await self._repo.get_all_not_in_pantry()
