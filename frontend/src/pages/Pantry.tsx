@@ -25,6 +25,7 @@ export function Pantry() {
   const [formError, setFormError] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<PantryEntry | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PantryEntry | null>(null);
+  const [syncWarning, setSyncWarning] = useState<string | null>(null);
 
   useEffect(() => {
     listPantryItems()
@@ -68,19 +69,23 @@ export function Pantry() {
     promise
       .then((saved) => {
         setInventory((prev) =>
-          editingItem
-            ? prev.map((i) => (i.id === saved.id ? saved : i))
-            : [...prev, saved]
+          editingItem ? prev.map((i) => (i.id === saved.id ? saved : i)) : [...prev, saved]
         );
         setFormOpen(false);
       })
-      .catch((err) => setFormError(messageFor(err)));
+      .catch((err) => {
+        if (err instanceof Error && err.message === 'PANTRY_SYNC_FAILED') {
+          setSyncWarning('Item was saved, but the ingredient may still show as available in the picker. You may need to refresh.');
+          setFormOpen(false);
+        } else {
+          setFormError(messageFor(err));
+        }
+      });
   }
 
-  function handleDelete(id: string) {
+  function handleDelete(id: string, ingredientId: string) {
     setInventory((prev) => prev.filter((i) => i.id !== id));
-    deletePantryItem(id).catch(() => {
-      // reload on failure since we've already removed it optimistically
+    deletePantryItem(id, ingredientId).catch(() => {
       listPantryItems().then(setInventory);
     });
   }
@@ -96,6 +101,15 @@ export function Pantry() {
           + Add item
         </button>
       </div>
+
+      {syncWarning && (
+        <p className="empty-note" style={{ color: 'var(--warn)' }}>
+          ⚠ {syncWarning}
+          <button className="link-btn" onClick={() => setSyncWarning(null)} style={{ marginLeft: 8 }}>
+            Dismiss
+          </button>
+        </p>
+      )}
 
       {loading && <p className="empty-note">Loading pantry…</p>}
       {error && <p className="empty-note">{error}</p>}
@@ -114,7 +128,7 @@ export function Pantry() {
           title="Delete item"
           message={`Delete "${deleteTarget.ingredientName}"? This can't be undone.`}
           onConfirm={() => {
-            handleDelete(deleteTarget.id);
+            handleDelete(deleteTarget.id, deleteTarget.ingredientId);
             setDeleteTarget(null);
           }}
           onCancel={() => setDeleteTarget(null)}
@@ -161,10 +175,10 @@ export function Pantry() {
                       {days === null
                         ? '—'
                         : days <= 0
-                        ? 'Expires today'
-                        : item.lowFlag
-                        ? `Expiring soon · ${days}d left`
-                        : `${days}d left`}
+                          ? 'Expires today'
+                          : item.lowFlag
+                            ? `Expiring soon · ${days}d left`
+                            : `${days}d left`}
                     </span>
                     <button className="icon-btn" title="Edit" onClick={() => openEditForm(item)}>
                       ✎
@@ -184,8 +198,8 @@ export function Pantry() {
                 <div key={item.id} className="pantry-row">
                   <span className="pantry-row__name">{item.ingredientName}</span>
                   <span className={item.lowFlag ? 'pill pill--warn' : 'pill pill--ok'}>
-                      {item.lowFlag ? 'Low stock' : 'Stocked'}
-                    </span>
+                    {item.lowFlag ? 'Low stock' : 'Stocked'}
+                  </span>
                   <button
                     className={item.lowFlag ? 'btn btn--sm btn--accent' : 'btn btn--sm btn--ghost'}
                     onClick={() => toggleLowFlag(item)}

@@ -20,7 +20,6 @@ class CreateIngredientRequest(BaseModel):
 
 class UpdateIngredientRequest(BaseModel):
     name: Optional[str] = Field(default=None)
-    unit: Optional[str] = Field(default=None)
     aisle: Optional[str] = Field(default=None)
 
 

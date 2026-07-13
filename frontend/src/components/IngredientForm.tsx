@@ -38,7 +38,13 @@ export function IngredientForm({
 
                 <label className="form-field">
                     Unit
-                    <select className="input" value={unit} onChange={(e) => setUnit(e.target.value)} required>
+                    <select
+                        className="input"
+                        value={unit}
+                        onChange={(e) => setUnit(e.target.value)}
+                        disabled={!!initial}
+                        required
+                    >
                         <option value="">Select unit…</option>
                         <option value="g">g (mass)</option>
                         <option value="ml">ml (volume)</option>

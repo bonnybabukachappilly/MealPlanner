@@ -1,6 +1,4 @@
-# backend/main.py
 import uvicorn
-import traceback
 import logging
 
 from contextlib import asynccontextmanager

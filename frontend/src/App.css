@@ -242,6 +242,21 @@
   color: var(--ink-soft);
 }
 
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface);
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  font-size: 14px;
+  max-width: 360px;
+  z-index: 100;
+}
+
 /* ---------- category tag / tape tab (signature element) ---------- */
 .category-tag {
   display: inline-flex;

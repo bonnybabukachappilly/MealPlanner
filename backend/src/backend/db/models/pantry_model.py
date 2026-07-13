@@ -10,7 +10,8 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from backend.db import Base
 from backend.domain import PantryTrackType
-from backend.db.models import IngredientModel
+
+from .ingredient_model import IngredientModel
 
 
 class PantryModel(Base):

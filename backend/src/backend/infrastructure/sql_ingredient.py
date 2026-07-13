@@ -2,12 +2,13 @@ from typing import Optional, Sequence
 from uuid import UUID
 
 from sqlalchemy import Result, select, delete
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.domain import Ingredient
 from backend.db.models import IngredientModel
 from backend.domain.repositories import IngredientRepo
-from backend.exceptions.general import ItemNotFound
+from backend.exceptions.general import ItemNotFound, IngredientInUse
 
 
 class SQLIngredientRepo(IngredientRepo):
@@ -70,12 +71,25 @@ class SQLIngredientRepo(IngredientRepo):
 
         model.name = data.name
         model.aisle = data.aisle
+        model.in_pantry = data.in_pantry
 
     async def delete(self, idx: UUID) -> None:
-        await self._session.execute(
-            delete(IngredientModel)
-            .where(IngredientModel.id == idx)
-        )
+        existing: Optional[IngredientModel] = await self._session.get(
+            IngredientModel, idx)
+
+        name: str = existing.name if existing else str(idx)
+
+        try:
+            await self._session.execute(
+                delete(IngredientModel)
+                .where(IngredientModel.id == idx)
+            )
+            await self._session.flush()
+        except IntegrityError as e:
+            await self._session.rollback()
+            raise IngredientInUse(
+                f'Ingredient "{name}" is still referenced by pantry or recipes.'
+            ) from e
 
     @staticmethod
     def _to_entity(model: IngredientModel) -> Ingredient:

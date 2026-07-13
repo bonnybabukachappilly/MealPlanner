@@ -29,6 +29,7 @@ export function Ingredients() {
     const [formError, setFormError] = useState<string | null>(null);
     const [editingItem, setEditingItem] = useState<IngredientItem | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<IngredientItem | null>(null);
+    const [toast, setToast] = useState<string | null>(null);
 
     useEffect(() => {
         listIngredients()
@@ -36,6 +37,12 @@ export function Ingredients() {
             .catch(() => setError('Could not load ingredients.'))
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (!toast) return;
+        const timer = setTimeout(() => setToast(null), 4000);
+        return () => clearTimeout(timer);
+    }, [toast]);
 
     const filtered = ingredients.filter((i) => i.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -75,10 +82,13 @@ export function Ingredients() {
     }
 
     function handleDelete(id: string) {
-        setIngredients((prev) => prev.filter((i) => i.id !== id));
-        deleteIngredient(id).catch(() => {
-            listIngredients().then(setIngredients);
-        });
+        deleteIngredient(id)
+            .then(() => {
+                setIngredients((prev) => prev.filter((i) => i.id !== id));
+            })
+            .catch((err) => {
+                setToast(messageFor(err));
+            });
     }
 
     return (
@@ -149,6 +159,12 @@ export function Ingredients() {
                         </div>
                     ))}
                 </>
+            )}
+
+            {toast && (
+                <div className="toast toast--error">
+                    {toast}
+                </div>
             )}
         </div>
     );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { PantryEntry, TrackType } from '../types';
-import { listIngredients, createIngredient, type IngredientItem } from '../api/ingredients';
+import { createIngredient, listEmptyPantryIngredients, type IngredientItem } from '../api/ingredients';
 import { ApiError } from '../api/client';
 import type { PantryFormData } from '../api/pantry';
 
@@ -38,28 +38,37 @@ export function PantryItemForm({
   const [expiryDateThreshold, setExpiryDateThreshold] = useState(
     initial?.expiryDateThreshold?.toString() ?? ''
   );
+  const selectedIngredient = ingredients.find((i) => i.id === ingredientId);
 
   // "+ New ingredient" shortcut state
   const [addingIngredient, setAddingIngredient] = useState(false);
   const [newIngredientName, setNewIngredientName] = useState('');
   const [newIngredientAisle, setNewIngredientAisle] = useState('');
+  const [newIngredientUnit, setNewIngredientUnit] = useState('');
   const [newIngredientError, setNewIngredientError] = useState<string | null>(null);
   const [newIngredientSaving, setNewIngredientSaving] = useState(false);
 
+
   useEffect(() => {
-    listIngredients()
+    listEmptyPantryIngredients()
       .then((list) => {
         setIngredients(list);
-        // pre-select the first ingredient on "add", unless one's already chosen
         setIngredientId((prev) => prev || (list[0]?.id ?? ''));
       })
       .catch(() => setIngredientsError('Could not load ingredients.'))
       .finally(() => setIngredientsLoading(false));
   }, []);
 
+  useEffect(() => {
+    if (selectedIngredient) {
+      setUnit(selectedIngredient.unit);
+    }
+  }, [selectedIngredient?.id]);
+
   function openNewIngredient() {
     setNewIngredientName('');
     setNewIngredientAisle('');
+    setNewIngredientUnit('');
     setNewIngredientError(null);
     setAddingIngredient(true);
   }
@@ -69,7 +78,10 @@ export function PantryItemForm({
     setNewIngredientError(null);
     setNewIngredientSaving(true);
 
-    createIngredient({ name: newIngredientName, aisle: newIngredientAisle })
+    createIngredient({
+      name: newIngredientName, aisle: newIngredientAisle,
+      unit: newIngredientUnit
+    })
       .then((created) => {
         setIngredients((prev) => [...prev, created]);
         setIngredientId(created.id);
@@ -154,6 +166,19 @@ export function PantryItemForm({
                 onChange={(e) => setNewIngredientAisle(e.target.value)}
               />
             </label>
+            <label className="form-field">
+              Unit
+              <select
+                className="input"
+                value={newIngredientUnit}
+                onChange={(e) => setNewIngredientUnit(e.target.value)}
+              >
+                <option value="">Select unit…</option>
+                <option value="g">g (mass)</option>
+                <option value="ml">ml (volume)</option>
+                <option value="pc">pc (count)</option>
+              </select>
+            </label>
             {newIngredientError && <p className="form-error">{newIngredientError}</p>}
             <div className="pantry-new-ingredient__actions">
               <button
@@ -202,7 +227,12 @@ export function PantryItemForm({
             </label>
             <label className="form-field">
               Unit
-              <input className="input" value={unit} onChange={(e) => setUnit(e.target.value)} required />
+              <input
+                className="input"
+                value={unit}
+                disabled
+                required
+              />
             </label>
             <label className="form-field">
               Low stock threshold

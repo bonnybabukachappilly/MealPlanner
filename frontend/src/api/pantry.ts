@@ -1,5 +1,6 @@
 import { client } from './client';
 import type { PantryEntry, TrackType } from '../types';
+import { setIngredientPantryStatus } from './ingredients';
 
 interface IngredientDTO {
   id: string;
@@ -89,7 +90,15 @@ export function getPantryItem(id: string): Promise<PantryEntry> {
 }
 
 export function createPantryItem(data: PantryFormData): Promise<PantryEntry> {
-  return client.post<PantryItemDTO>('/api/pantry', toCreatePayload(data)).then(fromDTO);
+  return client.post<PantryItemDTO>('/api/pantry', toCreatePayload(data))
+    .then(fromDTO)
+    .then((entry) =>
+      setIngredientPantryStatus(entry.ingredientId, true)
+        .then(() => entry)
+        .catch(() => {
+          throw new Error('PANTRY_SYNC_FAILED');
+        })
+    );
 }
 
 export function updatePantryItem(id: string, data: PantryFormData): Promise<PantryEntry> {
@@ -97,6 +106,10 @@ export function updatePantryItem(id: string, data: PantryFormData): Promise<Pant
   return client.patch<PantryItemDTO>(`/api/pantry/${id}`, toUpdatePayload(data)).then(fromDTO);
 }
 
-export function deletePantryItem(id: string): Promise<void> {
-  return client.delete<void>(`/api/pantry/${id}`);
+export function deletePantryItem(id: string, ingredientId: string): Promise<void> {
+  return client.delete<void>(`/api/pantry/${id}`).then(() =>
+    setIngredientPantryStatus(ingredientId, false).catch(() => {
+      throw new Error('PANTRY_SYNC_FAILED');
+    })
+  );
 }

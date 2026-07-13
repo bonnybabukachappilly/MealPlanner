@@ -42,3 +42,11 @@ export function updateIngredient(
 export function deleteIngredient(id: string): Promise<void> {
     return client.delete<void>(`/api/ingredient/${id}`);
 }
+
+export function listEmptyPantryIngredients(): Promise<IngredientItem[]> {
+    return client.get<IngredientDTO[]>('/api/ingredient/empty_pantry').then((items) => items.map(fromDTO));
+}
+
+export function setIngredientPantryStatus(id: string, inPantry: boolean): Promise<void> {
+    return client.patch<void>(`/api/ingredient/${id}/pantry`, { in_pantry: inPantry });
+}

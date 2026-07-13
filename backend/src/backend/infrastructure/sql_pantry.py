@@ -91,7 +91,9 @@ class SQLPantryRepo(PantryRepo):
             ingredient=Ingredient(
                 id=model.ingredient.id,
                 name=model.ingredient.name,
-                aisle=model.ingredient.aisle
+                unit=model.ingredient.unit,
+                aisle=model.ingredient.aisle,
+                in_pantry=model.ingredient.in_pantry
             ),
             quantity=model.quantity,
             unit=model.unit,

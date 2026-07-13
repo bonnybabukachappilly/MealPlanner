@@ -13,7 +13,7 @@ from backend.application.ingredient import (
 from backend.api.dependencies import IngredientDeps, SessionDeps
 from backend.exceptions.general import (
     DuplicateEntryFound, DBCreationFailed,
-    ItemNotFound
+    ItemNotFound, IngredientInUse
 )
 from backend.schemas import (
     IngredientResponse, CreateIngredientRequest,
@@ -41,7 +41,7 @@ async def get_all(repo: IngredientDeps) -> list[IngredientResponse | None]:
 
 
 @router.get(
-    path='',
+    path='/empty_pantry',
     response_model=list[IngredientResponse | None],
     status_code=status.HTTP_200_OK)
 async def get_all_not_in_pantry(
@@ -174,5 +174,12 @@ async def delete(
         await session.rollback()
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e)
+        ) from e
+
+    except IngredientInUse as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
             detail=str(e)
         ) from e

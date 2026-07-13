@@ -10,3 +10,7 @@ class ItemNotFound(Exception):
 
 class DBCreationFailed(Exception):
     ...
+
+
+class IngredientInUse(Exception):
+    ...
